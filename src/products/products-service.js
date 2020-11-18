@@ -3,6 +3,7 @@ const productsService = {
     return knex.select('*').from('products');
   },
   insertProduct(knex, newProduct) {
+    console.log('jere');
     return knex
       .insert(newProduct)
       .into('products')

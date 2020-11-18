@@ -8,10 +8,11 @@ const jsonParser = express.json();
 
 const serializeProduct = (product) => ({
   id: product.id,
-  name: xss(product.name),
+  product_name: xss(product.product_name),
   description: product.description,
-  inStock: xss(product.inStock),
-  seller: xss(product.seller),
+  stock_total: xss(product.stock_total),
+  provider: xss(product.provider),
+  unit_price: xss(product.unit_price),
 });
 
 productsRouter
@@ -26,8 +27,20 @@ productsRouter
       .catch(next);
   })
   .post(jsonParser, (req, res, next) => {
-    const { name, productId, description, seller } = req.body;
-    const newProduct = { name, productId, description, seller };
+    const {
+      product_name,
+      stock_total,
+      description,
+      provider,
+      unit_price,
+    } = req.body;
+    const newProduct = {
+      product_name,
+      description,
+      provider,
+      stock_total,
+      unit_price,
+    };
 
     for (const [key, value] of Object.entries(newProduct))
       if (value == null)
@@ -68,6 +81,33 @@ productsRouter
   .delete((req, res, next) => {
     productsService
       .deleteProduct(req.app.get('db'), req.params.productId)
+      .then((numRowsAffected) => {
+        res.status(204).end();
+      })
+      .catch(next);
+  })
+  .patch(jsonParser, (req, res, next) => {
+    const { product_name, description, stock_total, provider } = req.body;
+    const productToUpdate = {
+      product_name,
+      description,
+      stock_total,
+      provider,
+    };
+
+    const numberOfValues = Object.values(productToUpdate).filter(Boolean)
+      .length;
+    if (numberOfValues === 0) {
+      logger.error(`Invalid update without required fields`);
+      return res.status(400).json({
+        error: {
+          message: `Request body must content either 'name' , 'description' ,'stock', or 'provider'`,
+        },
+      });
+    }
+
+    productsService
+      .updateProduct(req.app.get('db'), req.params.productId, productToUpdate)
       .then((numRowsAffected) => {
         res.status(204).end();
       })
