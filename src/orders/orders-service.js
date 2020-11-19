@@ -1,10 +1,10 @@
 const ordersService = {
-  getAllProducts(knex) {
+  getAllOrders(knex) {
     return knex.select('*').from('orders');
   },
   insertOrder(knex, newOrder) {
     return knex
-      .insert(newProduct)
+      .insert(newOrder)
       .into('orders')
       .returning('*')
       .then((rows) => {
@@ -18,3 +18,4 @@ const ordersService = {
     return knex('orders').where({ id }).delete();
   },
 };
+module.exports = ordersService;

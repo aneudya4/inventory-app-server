@@ -1,12 +1,12 @@
 const path = require('path');
 const express = require('express');
 const xss = require('xss');
-const ordersRouter = require('./orders-service');
+const ordersService = require('./orders-service');
 
-const productsRouter = express.Router();
+const ordersRouter = express.Router();
 const jsonParser = express.json();
 
-const serializeProduct = (orders) => ({
+const serializeOrder = (orders) => ({
   id: orders.id,
   client: xss(orders.client),
   client_email: xss(orders.client_email),
@@ -20,7 +20,7 @@ ordersRouter
     ordersService
       .getAllOrders(knexInstance)
       .then((orders) => {
-        res.json(orders.map(serializeOrders));
+        res.json(orders.map(serializeOrder));
       })
       .catch(next);
   })
@@ -38,13 +38,13 @@ ordersRouter
           error: { message: `Missing '${key}' in request body` },
         });
 
-    productsService
-      .insertProduct(req.app.get('db'), newOrder)
+    ordersService
+      .insertOrder(req.app.get('db'), newOrder)
       .then((order) => {
         res
           .status(201)
           .location(path.posix.join(req.originalUrl, `/${order.id}`))
-          .json(serializeProduct(order));
+          .json(serializeOrder(order));
       })
       .catch(next);
   });
@@ -70,11 +70,11 @@ ordersRouter
   })
   .delete((req, res, next) => {
     ordersService
-      .deleteProduct(req.app.get('db'), req.params.orderId)
+      .deleteOrder(req.app.get('db'), req.params.orderId)
       .then((numRowsAffected) => {
         res.status(204).end();
       })
       .catch(next);
   });
 
-module.exports = productsRouter;
+module.exports = ordersRouter;
