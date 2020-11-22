@@ -11,6 +11,7 @@ const jsonParser = express.json();
 
 const serializeOrder = (orders) => ({
   id: orders.id,
+  user_id: xss(orders.user_id),
   client: xss(orders.client),
   client_email: xss(orders.client_email),
   order_total: xss(orders.order_total),
@@ -28,8 +29,10 @@ ordersRouter
       .catch(next);
   })
   .post(jsonParser, async (req, res, next) => {
-    const { client, client_email, products } = req.body;
+    const { client, client_email, products, user_id } = req.body;
+    console.log(req.body, 'jheere');
     const newOrder = {
+      user_id,
       client,
       client_email,
     };
@@ -39,7 +42,7 @@ ordersRouter
           error: { message: `Missing '${key}' in request body` },
         });
     }
-    //  loop product to verify products exist and are available
+
     const getAllProducts = async () => {
       const allProductPromises = [];
       products.forEach((requestProduct) => {
@@ -49,30 +52,29 @@ ordersRouter
       });
       return (await Promise.all(allProductPromises)).filter((p) => !!p);
     };
-
-    const allDBProducts = await getAllProducts();
-
-    if (allDBProducts.length !== products.length) {
+    const orderedProducts = await getAllProducts();
+    if (orderedProducts.length !== products.length) {
       return res.status(401).json({
         message: 'One or more products do not exist',
       });
     }
     let totalPrice = 0;
-    for (let idx = 0; idx < allDBProducts.length; idx++) {
-      totalPrice += products[idx].quantity * allDBProducts[idx].unit_price;
-      if (allDBProducts[idx].stock_total < products[idx].quantity) {
+    for (let idx = 0; idx < orderedProducts.length; idx++) {
+      totalPrice +=
+        parseInt(products[idx].quantity) *
+        parseInt(orderedProducts[idx].unit_price);
+      if (orderedProducts[idx].stock_total < products[idx].quantity) {
         return res.status(401).json({
-          message: `product ${product.id} is not  enough to sastisfy order`,
+          message: `product ${products[idx].id} is not  enough to sastisfy order`,
         });
       }
     }
 
     newOrder.order_total = totalPrice;
-
     ordersService
       .insertOrder(req.app.get('db'), newOrder)
       .then((order) => {
-        allDBProducts.forEach((product, idx) => {
+        orderedProducts.forEach((product, idx) => {
           const orderItem = {
             product_id: product.id,
             order_id: parseInt(order.id),
@@ -81,33 +83,48 @@ ordersRouter
           };
           orderItemService.insertOrder(req.app.get('db'), orderItem);
         });
+        return order;
+      })
+      .then(async (order) => {
+        for (let i = 0; i < orderedProducts.length; i++) {
+          const newStock =
+            parseInt(orderedProducts[i].stock_total) -
+            parseInt(products[i].quantity);
+          orderedProducts[i].stock_total = newStock;
+
+          await productsService.updateProduct(
+            req.app.get('db'),
+            orderedProducts[i].id,
+            orderedProducts[i]
+          );
+        }
         res
           .status(201)
           .location(path.posix.join(req.originalUrl, `/${order.id}`))
           .json(serializeOrder(order));
       })
+
       .catch(next);
   });
 
 ordersRouter
-  .route('/:orderId')
+  .route('/:userId')
   .all((req, res, next) => {
     ordersService
-      .getById(req.app.get('db'), req.params.orderId)
+      .getById(req.app.get('db'), req.params.userId)
       .then((order) => {
-        if (!order) {
-          return res.status(404).json({
-            error: { message: `order doesn't exist` },
-          });
+        if (!order || order.length === 0) {
+          res.order = order;
+          res.json(res.order);
         }
         return order;
       })
       .then((order) => {
         orderItemService
-          .getById(req.app.get('db'), req.params.orderId)
+          .getById(req.app.get('db'), req.params.userId)
           .then((orderItems) => {
-            const fullOrder = { ...order, orderItems };
-            res.order = fullOrder;
+            //   send order with order items
+            res.order = order;
             next();
           });
       })

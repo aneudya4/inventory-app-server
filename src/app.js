@@ -7,7 +7,7 @@ const { NODE_ENV } = require('./config');
 const productsRouter = require('./products/products-router');
 const ordersRouter = require('./orders/orders-router');
 const app = express();
-
+const userRouter = require('./users/users-router');
 const morganOption = NODE_ENV === 'production' ? 'tiny' : 'common';
 
 app.use(morgan(morganOption));
@@ -19,6 +19,7 @@ app.get('/', (req, res) => {
 });
 app.use('/api/products', productsRouter);
 app.use('/api/orders', ordersRouter);
+app.use('/api/users', userRouter);
 
 app.use(function errorHandler(error, req, res, next) {
   let response;

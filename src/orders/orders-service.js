@@ -11,8 +11,8 @@ const ordersService = {
         return rows[0];
       });
   },
-  getById(knex, id) {
-    return knex.from('orders').select('*').where('id', id).first();
+  getById(knex, userId) {
+    return knex.from('orders').select('*').where('user_id', userId);
   },
   deleteOrder(knex, id) {
     return knex('orders').where({ id }).delete();

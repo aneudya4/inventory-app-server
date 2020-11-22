@@ -1,6 +1,6 @@
 const productsService = {
-  getAllProducts(knex) {
-    return knex.select('*').from('products');
+  getAllProductByUserId(knex, userId) {
+    return knex.from('products').select('*').where('user_id', userId);
   },
   insertProduct(knex, newProduct) {
     return knex
@@ -15,6 +15,7 @@ const productsService = {
     return knex.from('products').select('*').where('id', id).first();
   },
   deleteProduct(knex, id) {
+    console.log(id, 'JHERE MMGMGMGMGM');
     return knex('products').where({ id }).delete();
   },
   updateProduct(knex, id, newProductFields) {

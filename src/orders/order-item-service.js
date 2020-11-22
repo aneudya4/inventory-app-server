@@ -1,7 +1,4 @@
 const orderItemService = {
-  getAllOrderItems(knex) {
-    return knex.select('*').from('order_item');
-  },
   insertOrder(knex, newOrderItem) {
     return knex
       .insert(newOrderItem)
