@@ -30,7 +30,6 @@ ordersRouter
   })
   .post(jsonParser, async (req, res, next) => {
     const { client, client_email, products, user_id } = req.body;
-    console.log(req.body, 'jheere');
     const newOrder = {
       user_id,
       client,
@@ -64,8 +63,11 @@ ordersRouter
         parseInt(products[idx].quantity) *
         parseInt(orderedProducts[idx].unit_price);
       if (orderedProducts[idx].stock_total < products[idx].quantity) {
+        const failedProduct = orderedProducts.find(
+          (product) => product.id === products[idx].id
+        );
         return res.status(401).json({
-          message: `product ${products[idx].id} is not  enough to sastisfy order`,
+          message: ` The stock total for  ${failedProduct.product_name}  is ${failedProduct.stock_total}`,
         });
       }
     }
@@ -115,18 +117,10 @@ ordersRouter
       .then((order) => {
         if (!order || order.length === 0) {
           res.order = order;
-          res.json(res.order);
+          return res.json(res.order);
         }
-        return order;
-      })
-      .then((order) => {
-        orderItemService
-          .getById(req.app.get('db'), req.params.userId)
-          .then((orderItems) => {
-            //   send order with order items
-            res.order = order;
-            next();
-          });
+        res.order = order;
+        next();
       })
       .catch(next);
   })

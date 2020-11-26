@@ -18,7 +18,6 @@ userRouter.route('/').post(jsonParser, (req, res, next) => {
     name,
     email,
   };
-
   for (const [key, value] of Object.entries(newUser))
     if (value == null)
       return res.status(400).json({
@@ -39,7 +38,6 @@ userRouter.route('/').post(jsonParser, (req, res, next) => {
 userRouter
   .route('/:email')
   .all((req, res, next) => {
-    console.log(req.params);
     userService
       .getByEmail(req.app.get('db'), req.params.email)
       .then((user) => {
