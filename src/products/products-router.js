@@ -113,12 +113,11 @@ productsRouter
 productsRouter.route('/:userId/:productId').delete((req, res, next) => {
   productsService
     .deleteProduct(req.app.get('db'), req.params.productId)
-    .then(() => {
-      productsService
-        .getAllProductByUserId(req.app.get('db'), req.params.userId)
-        .then((products) => {
-          return res.json(products);
-        });
+    .then((numRowsAffected) => {
+      if (numRowsAffected === 0) {
+        return res.status(404).send({ message: `Product Not Found` });
+      }
+      res.status(204).end();
     })
     .catch(next);
 });

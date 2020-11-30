@@ -43,7 +43,7 @@ userRouter
       .then((user) => {
         if (!user) {
           return res.status(404).json({
-            error: { message: `user doesn't exist` },
+            error: { message: `user Not Found` },
           });
         }
         res.user = user;
