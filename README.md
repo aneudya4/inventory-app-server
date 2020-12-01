@@ -1,6 +1,6 @@
 <h1 align="center">Invy API</h1>
-  This is the  API for the Invy project!
-
+<h2 align="center">  This is the  API for the Invy project!
+ </h2>
 <h2 align="center"><a  href="https://inventory-app-ui.vercel.app/">Live Demo</a></h2>
 
 <h2 align="center"><a  href="https://github.com/aneudya4/inventory-app-ui">FrontEnd Repo</a></h2>
