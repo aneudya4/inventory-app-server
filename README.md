@@ -16,9 +16,11 @@
 
 API Endpoints.
 
-https://stark-coast-96634.herokuapp.com/api/users
-https://stark-coast-96634.herokuapp.com/api/orders
+<p>https://stark-coast-96634.herokuapp.com/api/users </p>
+<p>https://stark-coast-96634.herokuapp.com/api/orders</p>
+<p>
 https://stark-coast-96634.herokuapp.com/api/products
+</p>
 
 ### Project setup:
 
