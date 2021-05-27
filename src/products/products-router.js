@@ -17,7 +17,8 @@ const serializeProduct = (product) => ({
   unit_price: xss(product.unit_price),
 });
 
-productsRouter.route('/').post(jsonParser, (req, res, next) => {
+productsRouter.route('/')
+.post(jsonParser, (req, res, next) => {
   const {
     product_name,
     user_id,
